@@ -17,15 +17,29 @@ class _Orch:
         )
 
 
-def test_health_ok():
+def test_health_ok_without_auth():
     app = create_app(orchestrator_factory=lambda: _Orch(), reports_dir="reports")
     client = TestClient(app)
     assert client.get("/health").json() == {"status": "ok"}
 
 
-def test_run_triggers_orchestrator():
-    app = create_app(orchestrator_factory=lambda: _Orch(), reports_dir="reports")
+def test_run_with_valid_token_triggers_orchestrator():
+    app = create_app(orchestrator_factory=lambda: _Orch(), api_token="secret")
     client = TestClient(app)
-    resp = client.post("/run")
+    resp = client.post("/run", headers={"Authorization": "Bearer secret"})
     assert resp.status_code == 200
     assert resp.json()["high"] == 0
+
+
+def test_run_without_token_is_unauthorized():
+    app = create_app(orchestrator_factory=lambda: _Orch(), api_token="secret")
+    client = TestClient(app)
+    assert client.post("/run").status_code == 401
+    assert client.post("/run", headers={"Authorization": "Bearer wrong"}).status_code == 401
+
+
+def test_protected_routes_disabled_when_no_token_configured():
+    app = create_app(orchestrator_factory=lambda: _Orch())
+    client = TestClient(app)
+    assert client.post("/run").status_code == 503
+    assert client.get("/reports/latest").status_code == 503

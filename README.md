@@ -24,9 +24,14 @@ cp .env.example .env        # 키 입력
 pytest                      # 전체 테스트
 python -m stockbriefing     # 1회 브리핑 실행
 
-# 선택: API 서버
-uvicorn "stockbriefing.api:create_app" --factory
+# 선택: API 서버 (로컬 전용 권장: --host 127.0.0.1)
+# /run, /reports/latest 는 API_TOKEN 설정 시에만 활성화되며 Bearer 토큰이 필요합니다.
+uvicorn "stockbriefing.api:default_app" --factory --host 127.0.0.1
 ```
+
+> 보안: `/run` 은 유료 LLM 호출과 발송을 유발하고 `/reports/latest` 는 리포트 내용을
+> 노출하므로, 두 라우트는 `API_TOKEN` 공유 시크릿(`Authorization: Bearer <token>`)으로
+> 보호됩니다. 토큰 미설정 시 두 라우트는 503으로 비활성화됩니다. `/health` 만 공개입니다.
 
 ## 설정
 

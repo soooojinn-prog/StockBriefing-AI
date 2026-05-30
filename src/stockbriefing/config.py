@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
 
+    # Shared secret protecting cost-incurring / data-exposing API routes.
+    # Empty = those routes are disabled (503) rather than open.
+    api_token: str = ""
+
     classifier_model: str = "claude-sonnet-4-6"
     summary_model: str = "claude-haiku-4-5-20251001"
 
