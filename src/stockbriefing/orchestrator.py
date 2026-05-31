@@ -5,6 +5,7 @@ from datetime import datetime
 
 from stockbriefing.models import Report, previous_market_close
 from stockbriefing.report.builder import ReportBuilder
+from stockbriefing.watchlist_monitor import build_watchlist_entries
 
 log = logging.getLogger("stockbriefing")
 
@@ -15,15 +16,20 @@ class BriefingOrchestrator:
         dart,
         market,
         classifier,
-        watchlist_codes,
+        watchlist,
         notifiers,
+        news_client=None,
+        summarizer=None,
         storage=None,
         max_items: int = 15,
     ):
         self._dart = dart
         self._market = market
         self._classifier = classifier
-        self._builder = ReportBuilder(watchlist_codes=set(watchlist_codes), max_items=max_items)
+        self._watchlist = list(watchlist)  # list[(code, name)]
+        self._news_client = news_client
+        self._summarizer = summarizer
+        self._builder = ReportBuilder(max_items=max_items)
         self._notifiers = notifiers
         self._storage = storage
 
@@ -38,9 +44,20 @@ class BriefingOrchestrator:
         classified = self._safe(
             lambda: self._classifier.classify(disclosures), "classifier", default=[]
         )
+        watchlist_entries = self._safe(
+            lambda: build_watchlist_entries(
+                self._watchlist, disclosures, self._news_client, self._summarizer
+            ),
+            "watchlist",
+            default=[],
+        )
 
         report = self._builder.build(
-            now, indicators=indicators, classified=classified, disclosures=disclosures
+            now,
+            indicators=indicators,
+            classified=classified,
+            disclosures=disclosures,
+            watchlist=watchlist_entries,
         )
 
         if self._storage is not None:

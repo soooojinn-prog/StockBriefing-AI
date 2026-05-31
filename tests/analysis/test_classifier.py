@@ -1,18 +1,19 @@
 import json
 
-from stockbriefing.analysis.classifier import ImportanceClassifier, _extract_json
+from stockbriefing.analysis.classifier import ImportanceClassifier
+from stockbriefing.analysis.jsonutil import extract_json_array
 from stockbriefing.models import Disclosure, Importance
 
 
 def test_extract_json_parses_well_formed_array():
-    assert _extract_json('답: [{"rcept_no": "1", "importance": "HIGH"}]') == [
+    assert extract_json_array('답: [{"rcept_no": "1", "importance": "HIGH"}]') == [
         {"rcept_no": "1", "importance": "HIGH"}
     ]
 
 
 def test_extract_json_salvages_truncated_array():
     truncated = '[{"rcept_no": "1", "importance": "HIGH", "reason": "ok"}, {"rcept_no": "2", "imp'
-    parsed = _extract_json(truncated)
+    parsed = extract_json_array(truncated)
     assert parsed == [{"rcept_no": "1", "importance": "HIGH", "reason": "ok"}]
 
 

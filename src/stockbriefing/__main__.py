@@ -6,8 +6,10 @@ import sys
 from anthropic import Anthropic
 
 from stockbriefing.analysis.classifier import ImportanceClassifier
+from stockbriefing.analysis.news_summarizer import NewsSummarizer
 from stockbriefing.collectors.dart import DartClient
 from stockbriefing.collectors.market import MarketClient
+from stockbriefing.collectors.news import NaverNewsClient
 from stockbriefing.config import Settings
 from stockbriefing.notifiers.discord import DiscordNotifier
 from stockbriefing.notifiers.telegram import TelegramNotifier
@@ -35,13 +37,18 @@ def build_orchestrator(settings: Settings) -> BriefingOrchestrator:
                 settings.request_timeout_seconds,
             )
         )
+    anthropic = Anthropic(api_key=settings.anthropic_api_key)
     return BriefingOrchestrator(
         dart=DartClient(settings.dart_api_key, settings.request_timeout_seconds),
         market=MarketClient(settings.ecos_api_key, settings.request_timeout_seconds),
-        classifier=ImportanceClassifier(
-            Anthropic(api_key=settings.anthropic_api_key), settings.classifier_model
+        classifier=ImportanceClassifier(anthropic, settings.classifier_model),
+        watchlist=watchlist,
+        news_client=NaverNewsClient(
+            settings.naver_client_id,
+            settings.naver_client_secret,
+            settings.request_timeout_seconds,
         ),
-        watchlist_codes={code for code, _ in watchlist},
+        summarizer=NewsSummarizer(anthropic, settings.summary_model),
         notifiers=notifiers,
         storage=FileStorage(),
         max_items=settings.max_items_per_section,

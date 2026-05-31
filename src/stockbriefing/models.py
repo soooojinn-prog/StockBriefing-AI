@@ -38,6 +38,7 @@ class NewsItem(BaseModel):
     pub_date: str = ""
     stock_code: str = ""
     corp_name: str = ""
+    summary: str = ""  # LLM one-line summary (optional)
 
 
 class MarketIndicator(BaseModel):
@@ -56,6 +57,15 @@ class ClassifiedItem(BaseModel):
     source_url: str = ""
 
 
+class WatchlistEntry(BaseModel):
+    """Independent per-stock view for a watchlist company: its disclosures and news."""
+
+    name: str
+    stock_code: str
+    disclosures: list[Disclosure] = []
+    news: list[NewsItem] = []
+
+
 class Report(BaseModel):
     generated_at: datetime
     indicators: list[MarketIndicator]
@@ -63,9 +73,9 @@ class Report(BaseModel):
     # Theme views over all disclosures (keyword-based, DART-only):
     earnings: list[Disclosure] = []  # 실적·손익구조 변동 (흑자전환 포함)
     ownership: list[Disclosure] = []  # 대량보유·지분 변동 (수급 신호)
-    # Watchlist is an INDEPENDENT view: every disclosure on the user's stocks,
+    # Watchlist is an INDEPENDENT view: each stock's disclosures + overnight news,
     # regardless of market-wide importance classification.
-    watchlist: list[Disclosure]
+    watchlist: list[WatchlistEntry] = []
 
     def to_markdown(self) -> str:
         lines: list[str] = []
@@ -94,7 +104,7 @@ class Report(BaseModel):
         lines.append("")
 
         lines.append("━━ ⭐ 내 관심종목 ━━")
-        lines.extend(_render_disclosures(self.watchlist))
+        lines.extend(_render_watchlist(self.watchlist))
         lines.append("")
 
         lines.append("──────────────────")
@@ -122,6 +132,25 @@ def _render_disclosures(items: list[Disclosure]) -> list[str]:
     for d in items:
         out.append(f"• [{d.corp_name}] {d.report_name.strip()}")
         out.append(f"  └ {d.source_url}")
+    return out
+
+
+def _render_watchlist(entries: list[WatchlistEntry]) -> list[str]:
+    if not entries:
+        return ["• 해당 없음"]
+    out: list[str] = []
+    for e in entries:
+        out.append(f"▸ {e.name}")
+        for d in e.disclosures:
+            out.append(f"  · [공시] {d.report_name.strip()}")
+            out.append(f"    └ {d.source_url}")
+        for n in e.news:
+            out.append(f"  · [뉴스] {n.title}")
+            if n.summary:
+                out.append(f"    └ {n.summary}")
+            out.append(f"    └ {n.link}")
+        if not e.disclosures and not e.news:
+            out.append("  · 새 소식 없음")
     return out
 
 

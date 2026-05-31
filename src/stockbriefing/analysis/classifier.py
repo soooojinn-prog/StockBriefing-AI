@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 
 from stockbriefing.analysis.guardrails import scrub_forbidden
+from stockbriefing.analysis.jsonutil import extract_json_array
 from stockbriefing.models import ClassifiedItem, Disclosure, Importance
 
 SYSTEM_PROMPT = (
@@ -30,29 +31,6 @@ def _build_user_prompt(disclosures: list[Disclosure]) -> str:
     )
 
 
-def _extract_json(text: str) -> list[dict]:
-    """Parse a JSON array from the model output, salvaging truncated responses."""
-    start = text.find("[")
-    if start == -1:
-        return []
-    snippet = text[start:]
-    end = snippet.rfind("]")
-    if end != -1:
-        try:
-            return json.loads(snippet[: end + 1])
-        except json.JSONDecodeError:
-            pass
-    # Response was cut off mid-array: keep everything up to the last complete
-    # object and close the array ourselves.
-    last_obj = snippet.rfind("}")
-    if last_obj == -1:
-        return []
-    try:
-        return json.loads(snippet[: last_obj + 1] + "]")
-    except json.JSONDecodeError:
-        return []
-
-
 class ImportanceClassifier:
     def __init__(self, client, model: str, max_tokens: int = 8000):
         self._client = client
@@ -69,7 +47,7 @@ class ImportanceClassifier:
             messages=[{"role": "user", "content": _build_user_prompt(disclosures)}],
         )
         raw = msg.content[0].text
-        verdicts = {v["rcept_no"]: v for v in _extract_json(raw)}
+        verdicts = {v["rcept_no"]: v for v in extract_json_array(raw)}
         out: list[ClassifiedItem] = []
         for d in disclosures:
             v = verdicts.get(d.rcept_no)
