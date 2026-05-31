@@ -16,7 +16,7 @@ def _disc(code, name="공시"):
     )
 
 
-def test_build_splits_high_medium_from_classified():
+def test_build_keeps_high_only_from_classified():
     classified = [
         _item("005930", Importance.HIGH),
         _item("111111", Importance.MEDIUM),
@@ -29,8 +29,8 @@ def test_build_splits_high_medium_from_classified():
         classified=classified,
         disclosures=[],
     )
-    assert len(report.high) == 1
-    assert len(report.medium) == 1
+    assert len(report.high) == 1  # MEDIUM/LOW excluded
+    assert "중요도 중간" not in report.to_markdown()
     assert "투자 자문" in report.to_markdown()
 
 

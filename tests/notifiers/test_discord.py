@@ -16,7 +16,6 @@ def test_discord_send_posts_content():
         generated_at=datetime(2026, 5, 30, 8, 0),
         indicators=[],
         high=[],
-        medium=[],
         watchlist=[],
     )
     DiscordNotifier(webhook_url="https://discord.test/webhook").send(report)

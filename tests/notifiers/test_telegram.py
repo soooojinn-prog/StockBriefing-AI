@@ -16,7 +16,6 @@ def test_telegram_send_posts_message():
         generated_at=datetime(2026, 5, 30, 8, 0),
         indicators=[],
         high=[],
-        medium=[],
         watchlist=[],
     )
     TelegramNotifier(bot_token="TOKEN", chat_id="42").send(report)

@@ -23,9 +23,8 @@ class ReportBuilder:
         classified: list[ClassifiedItem],
         disclosures: list[Disclosure],
     ) -> Report:
-        # Market radar: importance-classified, whole-market.
+        # Market radar: only HIGH-importance disclosures, whole-market.
         high = [c for c in classified if c.importance == Importance.HIGH][: self._max]
-        medium = [c for c in classified if c.importance == Importance.MEDIUM][: self._max]
         # Watchlist: independent — every disclosure on the user's stocks,
         # regardless of importance.
         watchlist = [d for d in disclosures if d.stock_code in self._watchlist][: self._max]
@@ -33,6 +32,5 @@ class ReportBuilder:
             generated_at=generated_at,
             indicators=indicators,
             high=high,
-            medium=medium,
             watchlist=watchlist,
         )

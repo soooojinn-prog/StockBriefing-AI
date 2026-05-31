@@ -54,7 +54,6 @@ def test_report_renders_disclaimer_always():
         generated_at=datetime(2026, 5, 30, 8, 0),
         indicators=[MarketIndicator(name="코스피", value="2650")],
         high=[],
-        medium=[],
         watchlist=[],
     )
     text = r.to_markdown()

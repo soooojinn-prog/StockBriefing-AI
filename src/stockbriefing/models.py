@@ -60,7 +60,6 @@ class Report(BaseModel):
     generated_at: datetime
     indicators: list[MarketIndicator]
     high: list[ClassifiedItem]
-    medium: list[ClassifiedItem]
     # Watchlist is an INDEPENDENT view: every disclosure on the user's stocks,
     # regardless of market-wide importance classification.
     watchlist: list[Disclosure]
@@ -81,10 +80,6 @@ class Report(BaseModel):
 
         lines.append("━━ 🔴 중요도 높음 ━━")
         lines.extend(_render_items(self.high))
-        lines.append("")
-
-        lines.append("━━ 🟡 중요도 중간 ━━")
-        lines.extend(_render_items(self.medium))
         lines.append("")
 
         lines.append("━━ ⭐ 내 관심종목 ━━")

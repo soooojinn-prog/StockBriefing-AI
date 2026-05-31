@@ -23,9 +23,9 @@ def _build_user_prompt(disclosures: list[Disclosure]) -> str:
         for d in disclosures
     ]
     return (
-        "다음 공시들을 분류하라. **HIGH 또는 MEDIUM 으로 판단되는 공시만** JSON 배열로 반환하고, "
-        "LOW(정기보고서·기재정정·약식보고 등 통상 영향이 미미한 공시)는 결과에서 제외하라. "
-        '각 원소는 {"rcept_no", "importance"(HIGH|MEDIUM), "reason"} 형식이며, reason 은 40자 이내로 짧게 쓰라. '
+        "다음 공시들을 분류하라. **오직 HIGH(통상 주가 변동성을 크게 키우는 핵심 재료)로 판단되는 "
+        "공시만** JSON 배열로 반환하고, MEDIUM·LOW 는 결과에서 제외하라. "
+        '각 원소는 {"rcept_no", "importance"("HIGH"), "reason"} 형식이며, reason 은 40자 이내로 짧게 쓰라. '
         "다른 설명 없이 JSON 배열만 출력하라.\n" + json.dumps(rows, ensure_ascii=False)
     )
 

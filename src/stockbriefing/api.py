@@ -40,7 +40,6 @@ def create_app(orchestrator_factory, reports_dir: str = "reports", api_token: st
         report = orchestrator_factory().run()
         return {
             "high": len(report.high),
-            "medium": len(report.medium),
             "watchlist": len(report.watchlist),
         }
 

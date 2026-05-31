@@ -12,7 +12,6 @@ class _Orch:
             generated_at=datetime(2026, 5, 30, 8, 0),
             indicators=[],
             high=[],
-            medium=[],
             watchlist=[],
         )
 

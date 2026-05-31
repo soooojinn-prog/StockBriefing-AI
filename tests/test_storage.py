@@ -9,7 +9,6 @@ def test_file_storage_writes_markdown(tmp_path):
         generated_at=datetime(2026, 5, 30, 8, 0),
         indicators=[],
         high=[],
-        medium=[],
         watchlist=[],
     )
     store = FileStorage(directory=str(tmp_path))

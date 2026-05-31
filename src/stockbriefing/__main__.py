@@ -54,7 +54,9 @@ def main() -> int:
         logging.warning("no notifiers configured; report will be generated but not sent")
     orchestrator = build_orchestrator(settings)
     report = orchestrator.run()
-    logging.info("briefing complete: %d high, %d medium", len(report.high), len(report.medium))
+    logging.info(
+        "briefing complete: %d high, %d watchlist", len(report.high), len(report.watchlist)
+    )
     return 0
 
 
