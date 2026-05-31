@@ -39,7 +39,9 @@ class BriefingOrchestrator:
             lambda: self._classifier.classify(disclosures), "classifier", default=[]
         )
 
-        report = self._builder.build(now, indicators=indicators, classified=classified)
+        report = self._builder.build(
+            now, indicators=indicators, classified=classified, disclosures=disclosures
+        )
 
         if self._storage is not None:
             self._safe(lambda: self._storage.save(report), "storage", default=None)

@@ -70,6 +70,8 @@ def test_run_builds_and_sends_report():
     assert isinstance(report, Report)
     assert len(notifier.sent) == 1
     assert report.high[0].corp_name == "A"
+    # Watchlist view is sourced from raw disclosures, independent of classification.
+    assert [d.stock_code for d in report.watchlist] == ["005930"]
 
 
 def test_run_continues_when_collector_fails():

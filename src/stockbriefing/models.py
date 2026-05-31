@@ -61,7 +61,9 @@ class Report(BaseModel):
     indicators: list[MarketIndicator]
     high: list[ClassifiedItem]
     medium: list[ClassifiedItem]
-    watchlist: list[ClassifiedItem]
+    # Watchlist is an INDEPENDENT view: every disclosure on the user's stocks,
+    # regardless of market-wide importance classification.
+    watchlist: list[Disclosure]
 
     def to_markdown(self) -> str:
         lines: list[str] = []
@@ -86,7 +88,7 @@ class Report(BaseModel):
         lines.append("")
 
         lines.append("━━ ⭐ 내 관심종목 ━━")
-        lines.extend(_render_items(self.watchlist))
+        lines.extend(_render_disclosures(self.watchlist))
         lines.append("")
 
         lines.append("──────────────────")
@@ -104,6 +106,16 @@ def _render_items(items: list[ClassifiedItem]) -> list[str]:
         out.append(f"  └ {it.reason}")
         if it.source_url:
             out.append(f"  └ {it.source_url}")
+    return out
+
+
+def _render_disclosures(items: list[Disclosure]) -> list[str]:
+    if not items:
+        return ["• 해당 없음"]
+    out: list[str] = []
+    for d in items:
+        out.append(f"• [{d.corp_name}] {d.report_name.strip()}")
+        out.append(f"  └ {d.source_url}")
     return out
 
 
