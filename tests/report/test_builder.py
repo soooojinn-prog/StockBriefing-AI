@@ -48,6 +48,24 @@ def test_watchlist_is_independent_of_classification():
     assert "분기보고서" in report.to_markdown()
 
 
+def test_build_populates_earnings_and_ownership_sections():
+    rb = ReportBuilder(watchlist_codes=set(), max_items=10)
+    report = rb.build(
+        datetime(2026, 5, 30, 8, 0),
+        indicators=[],
+        classified=[],
+        disclosures=[
+            _disc("005930", "영업(잠정)실적(공정공시)"),
+            _disc("000660", "주식등의대량보유상황보고서(일반)"),
+            _disc("111111", "단일판매ㆍ공급계약체결"),
+        ],
+    )
+    assert [d.stock_code for d in report.earnings] == ["005930"]
+    assert [d.stock_code for d in report.ownership] == ["000660"]
+    md = report.to_markdown()
+    assert "실적·손익" in md and "대량보유" in md
+
+
 def test_build_caps_section_size():
     items = [_item(f"{i:06d}", Importance.HIGH) for i in range(20)]
     rb = ReportBuilder(watchlist_codes=set(), max_items=5)

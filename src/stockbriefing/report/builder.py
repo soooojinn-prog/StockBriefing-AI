@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from stockbriefing.analysis.themes import filter_earnings, filter_ownership
 from stockbriefing.models import (
     ClassifiedItem,
     Disclosure,
@@ -25,6 +26,9 @@ class ReportBuilder:
     ) -> Report:
         # Market radar: only HIGH-importance disclosures, whole-market.
         high = [c for c in classified if c.importance == Importance.HIGH][: self._max]
+        # Theme views over all disclosures (keyword-based).
+        earnings = filter_earnings(disclosures)[: self._max]
+        ownership = filter_ownership(disclosures)[: self._max]
         # Watchlist: independent — every disclosure on the user's stocks,
         # regardless of importance.
         watchlist = [d for d in disclosures if d.stock_code in self._watchlist][: self._max]
@@ -32,5 +36,7 @@ class ReportBuilder:
             generated_at=generated_at,
             indicators=indicators,
             high=high,
+            earnings=earnings,
+            ownership=ownership,
             watchlist=watchlist,
         )

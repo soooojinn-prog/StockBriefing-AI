@@ -60,6 +60,9 @@ class Report(BaseModel):
     generated_at: datetime
     indicators: list[MarketIndicator]
     high: list[ClassifiedItem]
+    # Theme views over all disclosures (keyword-based, DART-only):
+    earnings: list[Disclosure] = []  # 실적·손익구조 변동 (흑자전환 포함)
+    ownership: list[Disclosure] = []  # 대량보유·지분 변동 (수급 신호)
     # Watchlist is an INDEPENDENT view: every disclosure on the user's stocks,
     # regardless of market-wide importance classification.
     watchlist: list[Disclosure]
@@ -80,6 +83,14 @@ class Report(BaseModel):
 
         lines.append("━━ 🔴 중요도 높음 ━━")
         lines.extend(_render_items(self.high))
+        lines.append("")
+
+        lines.append("━━ 📈 실적·손익 공시 (흑자전환 등) ━━")
+        lines.extend(_render_disclosures(self.earnings))
+        lines.append("")
+
+        lines.append("━━ 🏦 대량보유·지분 변동 (수급 신호) ━━")
+        lines.extend(_render_disclosures(self.ownership))
         lines.append("")
 
         lines.append("━━ ⭐ 내 관심종목 ━━")
