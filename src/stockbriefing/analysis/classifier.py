@@ -23,21 +23,38 @@ def _build_user_prompt(disclosures: list[Disclosure]) -> str:
         for d in disclosures
     ]
     return (
-        "다음 공시들을 분류해 JSON 배열로만 답하라. "
-        '각 원소는 {"rcept_no", "importance"(HIGH|MEDIUM|LOW), "reason"} 형식이다.\n'
-        + json.dumps(rows, ensure_ascii=False)
+        "다음 공시들을 분류하라. **HIGH 또는 MEDIUM 으로 판단되는 공시만** JSON 배열로 반환하고, "
+        "LOW(정기보고서·기재정정·약식보고 등 통상 영향이 미미한 공시)는 결과에서 제외하라. "
+        '각 원소는 {"rcept_no", "importance"(HIGH|MEDIUM), "reason"} 형식이며, reason 은 40자 이내로 짧게 쓰라. '
+        "다른 설명 없이 JSON 배열만 출력하라.\n" + json.dumps(rows, ensure_ascii=False)
     )
 
 
 def _extract_json(text: str) -> list[dict]:
-    start, end = text.find("["), text.rfind("]")
-    if start == -1 or end == -1:
+    """Parse a JSON array from the model output, salvaging truncated responses."""
+    start = text.find("[")
+    if start == -1:
         return []
-    return json.loads(text[start : end + 1])
+    snippet = text[start:]
+    end = snippet.rfind("]")
+    if end != -1:
+        try:
+            return json.loads(snippet[: end + 1])
+        except json.JSONDecodeError:
+            pass
+    # Response was cut off mid-array: keep everything up to the last complete
+    # object and close the array ourselves.
+    last_obj = snippet.rfind("}")
+    if last_obj == -1:
+        return []
+    try:
+        return json.loads(snippet[: last_obj + 1] + "]")
+    except json.JSONDecodeError:
+        return []
 
 
 class ImportanceClassifier:
-    def __init__(self, client, model: str, max_tokens: int = 2000):
+    def __init__(self, client, model: str, max_tokens: int = 8000):
         self._client = client
         self._model = model
         self._max_tokens = max_tokens
